@@ -19,7 +19,7 @@
   networking.networkmanager.enable = true;
 
   # Set your time zone.
-   time.timeZone = "Australia/Adelaide";
+  time.timeZone = "Australia/Adelaide";
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -40,6 +40,8 @@
   };
 
   # Hardware & Firmware
+  services.xserver.videoDrivers = [ "amdgpu" ];
+  hardware.amdgpu.opencl.enable = true;
   hardware.cpu.amd.updateMicrocode = true;
   services.fwupd.enable = true;
   hardware.bluetooth = {
@@ -53,20 +55,27 @@
       enable32Bit = true;
   };
 
-  hardware.amdgpu.opencl.enable = true;
-
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
 
-
+  services.displayManager.ly.enable = true;
 
   # Enable the X11 windowing system.
   services.xserver.enable = false;
 
-  programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
+  programs = {
+        hyprland = {
+	        enable = true;
+	        xwayland.enable = true;
+	        };
+        firefox = {
+            enable = true;
+        };
+        virt-manager = {
+            enable = true;
+        };
   };
+        
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
@@ -74,14 +83,14 @@
 
   # Enable CUPS to print documents.
    services.printing.enable = true;
-
    services.power-profiles-daemon.enable = true;
-
    services.upower.enable = true;
-
    security.polkit.enable = true;
-
    services.flatpak.enable = true;
+   xdg.portal.enable = true;
+   services.udisks2.enable = true;
+   services.gvfs.enable = true;
+   
 
   # Enable sound.
   # services.pulseaudio.enable = true;
@@ -103,9 +112,12 @@
      ];
    };
 
-   programs.firefox.enable = true;
-
    nixpkgs.config.allowUnfree = true;
+
+   virtualisation.libvirtd = {
+        enable = true;
+        qemu.vhostUserPackages = with pkgs; [ virtiofsd ];
+    };
 
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
@@ -116,6 +128,7 @@
      lshw
      jq
      bibata-cursors
+     adwaita-icon-theme
      gparted
      gimp
      networkmanagerapplet
@@ -135,16 +148,19 @@
      xdg-user-dirs
      gcc
      cava
+     clinfo
      vlc
      mesa-demos
      davinci-resolve
      freshfetch
      vlc
+     playerctl
      jellyfin-tui
      jellyfin-media-player
      solaar
 
      #Hyprland
+     xdg-desktop-portal-hyprland
      waybar
      wofi
      waypaper
@@ -160,7 +176,6 @@
      swaynotificationcenter
      swayosd
      wlogout
-     polybar
 
      #Kde Packages
      kdePackages.dolphin

@@ -11,13 +11,22 @@
       name = "Bibata-Modern-Classic";
       size = 24;
   };
-  programs.git.enable = true;
+  programs.git = {
+      enable = true;
+      settings = {
+          user.name = "Shane Scott";
+          user.email = "shane.r.scott1981@gmail.com";
+      };
+  };
   programs.kitty = {
       enable = true;
       settings = {
           background_opacity = 0.8;
           dynamic_background_opacity = true;
       };
+  };
+  programs.neovim = {
+      enable = true;
   };
   programs.bash = {
     enable = true;
