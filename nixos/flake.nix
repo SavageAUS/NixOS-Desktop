@@ -7,19 +7,14 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    quickshell = {
-        url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
-        inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, home-manager, quickshell, ... }: {
+  outputs = { self, nixpkgs, home-manager, ... }: {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       modules = [
         ./configuration.nix
         home-manager.nixosModules.home-manager
         ./modules/gaming.nix
-        ./modules/obs.nix
         {
           home-manager = {
             useGlobalPkgs = true;

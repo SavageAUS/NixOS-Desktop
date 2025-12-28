@@ -1,25 +1,29 @@
 { pkgs, config, ... }:
 {
-    imports = [
-    ];
+  imports = [
+  ];
 
-    config = {
-        programs.gamemode.enable = true;
+  options = {
+  };
 
-        programs.steam = {
-            enable = true;
-            remotePlay.openFirewall = true;
-            dedicatedServer.openFirewall = true;
-        };
+  config = {
+    programs.gamemode.enable = true; # for performance mode
 
-        environment.systemPackages = with pkgs; [
-        heroic
-        lutris
-        protonup-qt
-        mangohud
-        goverlay
-        mangojuice
-        prismlauncher
-        ];
+    programs.steam = {
+      enable = true; # install steam
+      remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+      dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
     };
+
+    environment.systemPackages = with pkgs; [
+      heroic # install heroic launcher
+      lutris # install lutris launcher
+      protonup-qt # GUI for installing custom Proton versions like GE_Proton
+      mangohud
+      goverlay
+      mangojuice
+      prismlauncher
+        ];
+      };
 }
+

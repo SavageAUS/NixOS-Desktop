@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   imports =
@@ -6,64 +6,64 @@
       ./hardware-configuration.nix
     ];
 
-  # Use the systemd-boot EFI boot loader.
+  # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  # networking.hostName = "nixos"; # Define your hostname.
-
-  # Configure network connections interactively with nmcli or nmtui.
-  networking.networkmanager.enable = true;
-
-  # Set your time zone.
-  time.timeZone = "Australia/Adelaide";
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
-
-  # Nix Tools
-  nix.optimise = {
-      automatic = true;
-      dates = ["weekly"];
-  };
-
-  # Hardware & Firmware
-  services.xserver.videoDrivers = [ "amdgpu" ];
-  hardware.amdgpu.opencl.enable = true;
-  hardware.cpu.amd.updateMicrocode = true;
-  services.fwupd.enable = true;
-  hardware.bluetooth = {
-      enable = true;
-      powerOnBoot = true;
-  };
-
-  # Graphics
+  networking.hostName = "nixos"; # Define your hostname.
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   hardware.graphics = {
       enable = true;
       enable32Bit = true;
   };
 
-  hardware.logitech.wireless.enable = true;
-  hardware.logitech.wireless.enableGraphical = true;
+  services.xserver.videoDrivers = [ "modesetting" "nvidia" ];
 
-  services.displayManager.ly.enable = true;
+  hardware.nvidia = {
+      modesetting.enable = true;
+      powerManagement.enable = false;
+      powerManagement.finegrained = false;
+      open = false;
+      nvidiaSettings = true;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      prime = {
+          offload = {
+              enable = true;
+              enableOffloadCmd = true;
+          };
+          intelBusId = "PCI:0:2:0";
+          nvidiaBusId = "PCI:1:0:0";
+      };
+  };
+  # Configure network proxy if necessary
+  # networking.proxy.default = "http://user:password@proxy:port/";
+  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = false;
+  # Enable networking
+  networking.networkmanager.enable = true;
 
-  programs = {
+  # Set your time zone.
+  time.timeZone = "Australia/Adelaide";
+
+  # Select internationalisation properties.
+  i18n.defaultLocale = "en_AU.UTF-8";
+
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS = "en_AU.UTF-8";
+    LC_IDENTIFICATION = "en_AU.UTF-8";
+    LC_MEASUREMENT = "en_AU.UTF-8";
+    LC_MONETARY = "en_AU.UTF-8";
+    LC_NAME = "en_AU.UTF-8";
+    LC_NUMERIC = "en_AU.UTF-8";
+    LC_PAPER = "en_AU.UTF-8";
+    LC_TELEPHONE = "en_AU.UTF-8";
+    LC_TIME = "en_AU.UTF-8";
+  };
+
+    programs = {
         hyprland = {
 	        enable = true;
 	        xwayland.enable = true;
@@ -71,134 +71,161 @@
         firefox = {
             enable = true;
         };
+        zsh = {
+            enable = true;
+            ohMyZsh = {
+                enable = true;
+                theme = "agnoster";
+                plugins = [ "git" "sudo" ];
+            };
+        };
         virt-manager = {
             enable = true;
         };
-  };
-        
+    };
 
-  # Configure keymap in X11
-  # services.xserver.xkb.layout = "us";
-  # services.xserver.xkb.options = "eurosign:e,caps:escape";
-
-  # Enable CUPS to print documents.
-   services.printing.enable = true;
-   services.power-profiles-daemon.enable = true;
-   services.upower.enable = true;
-   security.polkit.enable = true;
-   services.flatpak.enable = true;
-   xdg.portal.enable = true;
-   services.udisks2.enable = true;
-   services.gvfs.enable = true;
-   
-
-  # Enable sound.
-  # services.pulseaudio.enable = true;
-  # OR
-  # services.pipewire = {
-  #   enable = true;
-  #   pulse.enable = true;
-  # };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-   users.users.shane = {
-     isNormalUser = true;
-     extraGroups = [ "wheel" "networkmanager" "input"]; # Enable ‘sudo’ for the user.
-     packages = with pkgs; [
-       tree
-     ];
-   };
-
-   nixpkgs.config.allowUnfree = true;
-
-   virtualisation.libvirtd = {
+    virtualisation.docker = {
+        enable = true;
+        rootless = {
+            enable = true;
+            setSocketVariable = true;
+        };
+    };
+    virtualisation.libvirtd = {
         enable = true;
         qemu.vhostUserPackages = with pkgs; [ virtiofsd ];
     };
 
-  # List packages installed in system profile.
-  # You can use https://search.nixos.org/ to find more packages (and options).
-   environment.systemPackages = with pkgs; [
-     vim
-     wget
-     pciutils
-     lshw
-     jq
-     bibata-cursors
-     adwaita-icon-theme
-     gparted
-     gimp
-     networkmanagerapplet
-     blueman
-     gvfs
-     samba
-     zsh
-     zsh-completions
-     zsh-autocomplete
-     zsh-autosuggestions
-     zsh-syntax-highlighting
-     oh-my-zsh
-     zsh-powerlevel10k
-     localsend
-     cmatrix
-     btop
-     xdg-user-dirs
-     gcc
-     cava
-     clinfo
-     vlc
-     mesa-demos
-     davinci-resolve
-     freshfetch
-     vlc
-     playerctl
-     jellyfin-tui
-     jellyfin-media-player
-     solaar
+  # Configure keymap in X11
+  services.xserver.xkb = {
+    layout = "en-us";
+    variant = "";
+  };
 
-     #Hyprland
-     xdg-desktop-portal-hyprland
-     waybar
-     wofi
-     waypaper
-     swww
-     hypridle
-     hyprlock
-     hyprcursor
-     hyprpolkitagent
-     hyprviz
-     cliphist
-     wl-clipboard
-     wl-clip-persist
-     swaynotificationcenter
-     swayosd
-     wlogout
+  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.users.shane = {
+      isNormalUser = true;
+      description = "Shane Scott";
+      extraGroups = [ "networkmanager" "wheel" "input" "libvirtd" "docker" ];
+      packages = with pkgs; [
+      
+    ];
+  };
+  users.users.shane.shell = pkgs.zsh;
 
-     #Kde Packages
-     kdePackages.dolphin
-     kdePackages.dolphin-plugins
-     kdePackages.kate
-     kdePackages.qtsvg
-     kdePackages.kio
-     kdePackages.kio-fuse
-     kdePackages.kio-extras
-     kdePackages.kservice
-     kdePackages.breeze
-     kdePackages.ark
+  # Allow unfree packages
+  nixpkgs.config.allowUnfree = true;
+  security.polkit.enable = true;
+  
 
-     #Unfree Software
-     discord
-     microsoft-edge
-     ];
+  services.flatpak = {
+      enable = true;
+  };
+  xdg.portal = {
+      enable = true;
+  };
+  services.udisks2 = {
+      enable = true;
+  };
+  services.gvfs = {
+      enable = true;
+  };
+  services.displayManager.ly = {
+      enable = true;
+  };
 
-     fonts.packages = with pkgs; [
-     nerd-fonts.jetbrains-mono
-     nerd-fonts.meslo-lg
-     font-awesome
-     ];
+  # List packages installed in system profile. To search, run:
+  # $ nix search wget
+  environment.systemPackages = with pkgs; [
+    vim
+    neovim
+    wget
+    git
+    udiskie
+    brightnessctl
+    playerctl
+    pciutils
+    lshw
+    jq
+    bibata-cursors
+    adwaita-icon-theme
+    papirus-icon-theme
+    gparted
+    oh-my-zsh
+    gimp
+    networkmanager
+    networkmanagerapplet
+    blueman
+    cmatrix
+    btop
+    xdg-user-dirs
+    gcc
+    tree-sitter
+    cava
+    vlc
+    quickshell
+    mesa-demos
+    flatpak
+    virt-manager
+    libvirt
+    qemu
+    dnsmasq
+    obs-studio
+    jellyfin-tui
+    jellyfin-media-player
+
+
+    #Hyprland
+    waybar
+    wofi
+    waypaper
+    swww
+    xdg-desktop-portal-hyprland
+    hypridle
+    hyprlock
+    hyprcursor
+    hyprpolkitagent
+    grim
+    slurp
+    hyprviz
+    cliphist
+    wl-clipboard
+    wl-clip-persist
+    swaynotificationcenter
+    swayosd
+    wlogout
+    
+
+    #Niri
+    fuzzel
+
+    #Kde Applications
+    kdePackages.dolphin
+    kdePackages.kate
+    kdePackages.qtsvg
+    kdePackages.kio
+    kdePackages.kio-fuse
+    kdePackages.kio-extras
+    kdePackages.kservice
+    kdePackages.breeze
+    kdePackages.ark
+    qt6.qtbase
+    qt6.qtdeclarative
+    qt6.qtwayland
+    qt6.qt5compat
+    qt6.qtmultimedia
+
+
+    #Unfree Software
+    discord
+    microsoft-edge
+    ];
+
+    fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.meslo-lg
+    font-awesome
+    ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -219,30 +246,13 @@
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
-  # Copy the NixOS configuration file and link it from the resulting system
-  # (/run/current-system/configuration.nix). This is useful in case you
-  # accidentally delete configuration.nix.
-  # system.copySystemConfiguration = true;
-
-  # This option defines the first version of NixOS you have installed on this particular machine,
-  # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
-  #
-  # Most users should NEVER change this value after the initial install, for any reason,
-  # even if you've upgraded your system to a new NixOS release.
-  #
-  # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
-  # to actually do that.
-  #
-  # This value being lower than the current NixOS release does NOT mean your system is
-  # out of date, out of support, or vulnerable.
-  #
-  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-  # and migrated your data accordingly.
-  #
-  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
+  # This value determines the NixOS release from which the default
+  # settings for stateful data, like file locations and database versions
+  # on your system were taken. It‘s perfectly fine and recommended to leave
+  # this value at the release version of the first install of this system.
+  # Before changing this value read the documentation for this option
+  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   system.stateVersion = "25.11"; # Did you read the comment?
 
 }
-
